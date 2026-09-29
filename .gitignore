@@ -1,0 +1,7 @@
+networkFiles/
+qbftConfigFile.json
+polygon-allocs.json
+*.keystore
+key
+key.pub
+.env
