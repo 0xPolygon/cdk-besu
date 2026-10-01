@@ -67,7 +67,8 @@ Work through the checks in order. Each one depends on the previous checks passin
 
 6. **The first certificate settles on the Agglayer.** Follow the certificate through the Agglayer as described in the [Agglayer observability docs](https://docs.polygon.technology/interoperability/agglayer/observability). A settled certificate is also what makes the withdrawal in check 5 claimable.
 
-   <!-- TODO(verify): the Agglayer RPC method for reading a network's latest settled certificate. -->
+> [!CAUTION]
+> **Unverified:** The Agglayer RPC method for reading a network's latest settled certificate. Until it is confirmed, follow the certificate through the observability docs above.
 
 ## Operations
 
@@ -101,7 +102,8 @@ Upgrade one node at a time. After each node restarts on the new version, confirm
 - **Validator node keys:** add a validator with the new key and remove the old one, both through the validator vote above. Do the add first, so the set never shrinks below the size you need.
 - **Aggsender and aggsender validator keys:** these keys are registered as signers on the `AggchainECDSAMultisig` contract. Change them by updating the signer set with `updateSignersAndThreshold`, which only the aggchain manager can call, then restart the affected service with the new keystore.
 
-<!-- TODO(verify): the procedure and permissions for updating AggchainECDSAMultisig signers after initialization. -->
+> [!CAUTION]
+> **Unverified:** The full procedure and required permissions for updating the `AggchainECDSAMultisig` signer set after initialization, including which address holds the aggchain manager role.
 
 ---
 

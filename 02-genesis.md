@@ -84,7 +84,8 @@ Update the file with relevant information from your `combined.json`. Example con
 > [!NOTE]
 > The AggOracle committee is not supported on Besu chains. Keep `useAggOracleCommittee` set to `false`, so a single `AGGORACLE_ADDRESS`, set as `globalExitRootUpdater`, updates the GER on L2.
 
-<!-- TODO(verify): confirm with the Agglayer team why Kurtosis rejects use_agg_oracle_committee for Besu, and whether production chains can enable it. -->
+> [!CAUTION]
+> **Unverified:** Why Kurtosis rejects the AggOracle committee for Besu chains, and whether production chains can enable it. This needs confirmation from the Agglayer team.
 
 ## Step 3: Download Allocs File
 

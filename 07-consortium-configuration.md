@@ -138,7 +138,8 @@ The proposing aggsender adds an `[AggSender.ValidatorClient]` section with the v
 URL = "<validator_host>:<validator_grpc_port>"
 ```
 
-<!-- TODO(verify): Kurtosis sets a single [AggSender.ValidatorClient] URL. Confirm how the proposer reaches several validators (for example through the signer URLs registered on chain) and document the exact configuration. -->
+> [!CAUTION]
+> **Unverified:** How the proposer reaches several aggsender validators. Kurtosis configures a single `[AggSender.ValidatorClient]` URL; the configuration for a larger committee, for example through the signer URLs registered on-chain, still needs confirmation.
 
 The proposer can also enable `RequireCommitteeMembershipCheck` under `[AggSender]`. The aggkit configuration describes it as a check at proposer startup of whether the proposer is in the multisig committee.
 

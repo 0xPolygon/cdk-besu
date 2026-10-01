@@ -36,7 +36,8 @@ A single validator works for devnets and matches the tested Kurtosis setup, but 
 
 Run at least one RPC node separate from the validators. aggkit, the bridge service, and users connect to the RPC node, and the validators stay off the public network.
 
-<!-- TODO(verify): Kurtosis tests a single QBFT validator only. Remove this marker once a multi-validator Kurtosis preset passes. -->
+> [!CAUTION]
+> **Unverified:** The Kurtosis test suite runs a single QBFT validator only. Networks with several validators have not yet passed an automated end-to-end test with the Agglayer stack.
 
 ## Step 2: Normalize the Polygon Allocs
 
@@ -250,7 +251,8 @@ docker run -d --name besu-rpc \
 
 `--host-allowlist` lists the hostnames clients use to reach the RPC node. Besu accepts only `localhost` and `127.0.0.1` by default, so aggkit and the bridge service fail to connect unless their hostname for the node is on the list.
 
-<!-- TODO(verify): confirm the minimum RPC API set aggkit and bridge-service need on the RPC node, so production operators can drop DEBUG and TRACE if unused. -->
+> [!CAUTION]
+> **Unverified:** The minimum RPC API set aggkit and the bridge service need on the RPC node. Until it is confirmed, keep `DEBUG` and `TRACE` enabled.
 
 ### Differences from the Kurtosis devnet
 
@@ -284,7 +286,8 @@ Mount the file writable, not with `:ro`. Besu writes to it when the allowlist ch
 
 For node permissioning, add a `nodes-allowlist` entry with the enode URL of every validator and RPC node, and enable it with `--permissions-nodes-config-file-enabled` and `--permissions-nodes-config-file`. Read the RPC node's public key from its data volume with `besu --data-path=/data public-key export`.
 
-<!-- TODO(verify): confirm whether local account permissioning must be enabled on every validator as well as the RPC node for the allowlist to take effect during block production and block import. -->
+> [!CAUTION]
+> **Unverified:** Whether account permissioning must be enabled on every validator, as well as on the RPC node, for the allowlist to apply during block production and block import. Until it is confirmed, enable it with the same file on every node.
 
 ## Step 5: Confirm the Chain Is Producing Blocks
 

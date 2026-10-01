@@ -1,12 +1,15 @@
 ```
-░█▀▀░█▀▄░█░█░░░░░█▀▄░█▀▀░█▀▀░█░█
-░█░░░█░█░█▀▄░▄▄▄░█▀▄░█▀▀░▀▀█░█░█
-░▀▀▀░▀▀░░▀░▀░░░░░▀▀░░▀▀▀░▀▀▀░▀▀▀
+┏━╸╺┳┓╻┏    ┏┓ ┏━╸┏━┓╻ ╻
+┃   ┃┃┣┻┓╺━╸┣┻┓┣╸ ┗━┓┃ ┃
+┗━╸╺┻┛╹ ╹   ┗━┛┗━╸┗━┛┗━┛
 ```
 
 **Deploy a Hyperledger Besu QBFT chain, connected to Agglayer.**
 
-This repository is a step-by-step guide for standing up a [Hyperledger Besu](https://github.com/hyperledger/besu) chain that runs QBFT (Besu's Byzantine fault tolerant proof-of-authority consensus) and attaching it to the [Agglayer](https://agglayer.github.io/). It serves chain operators bringing up devnets, testnets, or production networks on **Sepolia** or **Ethereum mainnet**, including organizations that already run Besu for a permissioned or private ledger. The guide covers one deployment path: Pessimistic Proof (PP) with the `AggchainECDSAMultisig` consensus contract, plus an optional configuration for a chain run jointly by a consortium.
+This repository is a step-by-step guide for standing up a [Hyperledger Besu](https://github.com/hyperledger/besu) chain that runs QBFT (Besu's Byzantine fault tolerant proof-of-authority consensus) and attaching it to the [Agglayer](https://agglayer.github.io/). It serves chain operators bringing up a new chain as a devnet, testnet, or production network on **Sepolia** or **Ethereum mainnet**. The guide covers one deployment path: Pessimistic Proof (PP) with the `AggchainECDSAMultisig` consensus contract, plus an optional configuration for a chain run jointly by a consortium.
+
+> [!NOTE]
+> This guide creates a new chain, with the Agglayer bridge and GER (Global Exit Root) contracts in its genesis. Connecting a chain that already exists, with its own history, follows the Agglayer Outpost path, which this guide does not cover.
 
 > [!IMPORTANT]
 > The commands in this guide pass private keys directly on the command line for clarity. For testnet and mainnet deployments, use a keystore or hardware wallet. Never use literal private keys, and never commit them to version control. See [Prerequisites](00-prerequisites.md) for guidance.
@@ -93,7 +96,7 @@ flowchart LR
 ```
 
 > [!NOTE]
-> The dashed arrows are periodic reads: `bridge-service` and `aggkit` continuously read bridge and GER (Global Exit Root) events from L1 and the Besu RPC node. Step 4 applies only to the consortium configuration in [chapter 07](07-consortium-configuration.md).
+> The dashed arrows are periodic reads: `bridge-service` and `aggkit` continuously read bridge and GER events from L1 and the Besu RPC node. Step 4 applies only to the consortium configuration in [chapter 07](07-consortium-configuration.md).
 
 ## How cdk-besu differs from cdk-op-reth
 
@@ -110,6 +113,9 @@ flowchart LR
 ## Deployment Steps
 
 Before starting, review the **[Prerequisites](00-prerequisites.md)** for host tooling, component versions, and the wallet accounts you'll need to fund.
+
+> [!CAUTION]
+> Callouts marked **Unverified** flag details that still need confirmation from testing or the Agglayer team. Check each one before a testnet or mainnet deployment.
 
 1. **[Rollup Creation](01-rollup-creation.md)** - Initiate the Agglayer chain integration process with Polygon Labs to receive the deployment artifacts
 2. **[Genesis Generation](02-genesis.md)** - Generate the Polygon genesis fragment with the sovereign bridge and GER predeploys

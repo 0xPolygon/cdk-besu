@@ -25,7 +25,8 @@ cp ./tools/initializeRollup/initialize_rollup.json.example ./tools/initializeRol
 
 Edit the file with your values:
 
-<!-- TODO(verify): the template sets trustedSequencerURL to the aggsender RPC; Kurtosis sets it to the Besu RPC URL. Confirm the correct value. -->
+> [!CAUTION]
+> **Unverified:** The correct `trustedSequencerURL` value. Other Agglayer deployment guides set it to the aggsender RPC, as in the example below; the Kurtosis Besu devnet sets it to the Besu RPC URL.
 
 ```json
 {

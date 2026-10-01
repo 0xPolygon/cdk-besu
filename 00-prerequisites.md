@@ -44,8 +44,11 @@ Install the following on the machine you'll run the deployment from:
 | aggkit | 0.10.0 | `ghcr.io/agglayer/aggkit` |
 | zkevm-bridge-service | see note | `hermeznetwork/zkevm-bridge-service` |
 
-<!-- TODO(verify): aggkit image tag format. The template uses "0.8.2"; confirm whether the 0.10.0 tag carries a "v" prefix. -->
-<!-- TODO(verify): Kurtosis tested zkevm-bridge-service 0.6.4-RC2; cdk-op-reth pins v0.6.3. Confirm which version to pin for Besu. -->
+> [!CAUTION]
+> **Unverified:** Whether the aggkit 0.10.0 image tag carries a `v` prefix (`0.10.0` or `v0.10.0`). Check the tags on `ghcr.io/agglayer/aggkit` before you pull.
+
+> [!CAUTION]
+> **Unverified:** Which zkevm-bridge-service version to pin. Kurtosis tests `0.6.4-RC2`; the latest stable release is `v0.6.3`.
 
 > [!WARNING]
 > Use aggkit 0.9 or later. Earlier versions recompute L2 block hashes with go-ethereum header hashing, which never matches a QBFT block hash, so the L2 bridge syncer drops every block that carries bridge events and aggkit never builds a certificate.

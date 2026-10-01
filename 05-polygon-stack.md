@@ -75,7 +75,8 @@ Every block-tag setting is `LatestBlock`, because QBFT finalizes each block when
 
 `SequencerPrivateKeyPath` and `AggSenderPrivateKey` point to the same keystore, the one holding the `AGGSENDER_ADDRESS` key that you registered as a signer in [chapter 04](04-rollup-initialization.md). Kurtosis mounts this key as `sequencer.keystore`; the file name does not matter as long as both settings reference the same file.
 
-<!-- TODO(verify): confirm SequencerPrivateKeyPath and AggSenderPrivateKey should reference the same key for AggchainECDSAMultisig. -->
+> [!CAUTION]
+> **Unverified:** Whether `SequencerPrivateKeyPath` and `AggSenderPrivateKey` must reference the same key for `AggchainECDSAMultisig`. Kurtosis points both at the same keystore.
 
 Fill in the placeholders from these sources:
 
