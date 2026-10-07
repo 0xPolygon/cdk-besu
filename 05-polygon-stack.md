@@ -73,10 +73,9 @@ Every block-tag setting is `LatestBlock`, because QBFT finalizes each block when
 
 `L1ChainID` under `[AggOracle.EVMSender.EthTxManager.Etherman]` takes the **L2** chain ID. That section configures the transaction manager that sends GER updates to L2, and the key name is inherited from its L1 counterpart. Do not change it to the L1 chain ID.
 
-`SequencerPrivateKeyPath` and `AggSenderPrivateKey` point to the same keystore, the one holding the `AGGSENDER_ADDRESS` key that you registered as a signer in [chapter 04](04-rollup-initialization.md). Kurtosis mounts this key as `sequencer.keystore`; the file name does not matter as long as both settings reference the same file.
+`[AggSender] AggSenderPrivateKey` is the key the aggsender signs certificates with. It must hold the `AGGSENDER_ADDRESS` key that you registered as the first signer in [chapter 04](04-rollup-initialization.md): the aggsender reads the signer list from the rollup contract and refuses to propose unless its own address is at index 0.
 
-> [!CAUTION]
-> **Unverified:** Whether `SequencerPrivateKeyPath` and `AggSenderPrivateKey` must reference the same key for `AggchainECDSAMultisig`. Kurtosis points both at the same keystore.
+aggkit never reads `SequencerPrivateKeyPath` and `SequencerPrivateKeyPassword` at runtime. They are template variables in the aggkit default configuration, and their only effect is to supply the default value for `AggSenderPrivateKey` and for the `[Validator] Signer` key. Because this guide sets `AggSenderPrivateKey` explicitly, the two do not have to match. Point both at the same keystore anyway, as Kurtosis does with `sequencer.keystore`, so that no default falls back to a different file.
 
 Fill in the placeholders from these sources:
 
@@ -168,7 +167,7 @@ If you enabled account permissioning on Besu, add `AGGORACLE_ADDRESS` and `CLAIM
 ```shell
 docker run --rm -it \
   -v /path/to/config.toml:/app/config.toml \
-  hermeznetwork/zkevm-bridge-service:${zkevm_bridge_service_version} \
+  ghcr.io/0xpolygon/zkevm-bridge-service:${zkevm_bridge_service_version} \
   run --cfg=/app/config.toml
 ```
 

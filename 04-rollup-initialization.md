@@ -25,13 +25,10 @@ cp ./tools/initializeRollup/initialize_rollup.json.example ./tools/initializeRol
 
 Edit the file with your values:
 
-> [!CAUTION]
-> **Unverified:** The correct `trustedSequencerURL` value. Other Agglayer deployment guides set it to the aggsender RPC, as in the example below; the Kurtosis Besu devnet sets it to the Besu RPC URL.
-
 ```json
 {
     "type": "EOA",
-    "trustedSequencerURL": "http://<your_aggsender_rpc>",
+    "trustedSequencerURL": "<besu_rpc_url>",
     "networkName": "<network-name>",
     "trustedSequencer": "<AGGSENDER_ADDRESS>",
     "chainID": <l2ChainID-from-combined.json>,
@@ -59,6 +56,12 @@ Edit the file with your values:
     }
 }
 ```
+
+Notes on the fields:
+
+- `trustedSequencerURL` is informational. The contract stores it, and no Agglayer component (the Agglayer node, aggkit, or the bridge service) reads it. Set it to the public URL of your Besu RPC node, as Kurtosis does. It must not be empty. The rollup admin (`rollupAdminAddress`) can change it later with `setTrustedSequencerURL`.
+- The first entry in `signers` must be `AGGSENDER_ADDRESS`. The aggsender refuses to send certificates unless it is the signer at index 0. The aggsender signs its own entry locally and never dials its own `url`, but the contract rejects an empty `url`, so set it to the aggsender host.
+- The account that runs this script must be the aggchain manager: the EOA whose address you supplied as `initializeBytesAggchain` in the [chain integration runbook](01-rollup-creation.md). The script stops if the deployer key is a different account. The aggchain manager is a separate role from `rollupAdminAddress`, and it is the account that later changes the signer set (see [chapter 06](06-verification-and-operations.md#updating-the-signer-set)).
 
 > [!NOTE]
 > A consortium chain lists several signers and sets a `threshold` greater than one. See [Consortium Configuration](07-consortium-configuration.md#shared-certificate-approval-an-aggsender-validator-committee).

@@ -65,10 +65,22 @@ Work through the checks in order. Each one depends on the previous checks passin
    curl -s "${bridge_service_url}/merkle-proof?net_id=${l2_network_id}&deposit_cnt=<deposit_cnt>" | jq
    ```
 
-6. **The first certificate settles on the Agglayer.** Follow the certificate through the Agglayer as described in the [Agglayer observability docs](https://docs.polygon.technology/interoperability/agglayer/observability). A settled certificate is also what makes the withdrawal in check 5 claimable.
+6. **The first certificate settles on the Agglayer.** Query the Agglayer JSON-RPC API with your rollup ID:
 
-> [!CAUTION]
-> **Unverified:** The Agglayer RPC method for reading a network's latest settled certificate. Until it is confirmed, follow the certificate through the observability docs above.
+   ```shell
+   # Bali: https://agglayer-dev.polygon.technology
+   # Cardona: https://agglayer-test.polygon.technology
+   # Mainnet: https://agglayer.polygon.technology
+   export agglayer_rpc_url="https://agglayer-dev.polygon.technology"
+
+   # Latest certificate the Agglayer has received, in any state
+   cast rpc interop_getLatestKnownCertificateHeader "${l2_network_id}" --rpc-url "${agglayer_rpc_url}" | jq
+
+   # Latest certificate that has settled on L1
+   cast rpc interop_getLatestSettledCertificateHeader "${l2_network_id}" --rpc-url "${agglayer_rpc_url}" | jq '{height, status, certificate_id, settlement_tx_hash}'
+   ```
+
+   The settled header shows `"status": "Settled"` and a `settlement_tx_hash` on L1. Before your first certificate settles, `interop_getLatestSettledCertificateHeader` returns `null`. A certificate moves through `Pending`, `Proven`, and `Candidate` to `Settled`. `interop_getLatestPendingCertificateHeader` shows one still in progress; a failed certificate shows `InError` with the error in its `status`. `interop_getNetworkInfo` returns the settled height and the latest pending status in one call. A settled certificate is also what makes the withdrawal in check 5 claimable. The [Agglayer observability docs](https://docs.polygon.technology/interoperability/agglayer/observability) cover the certificate lifecycle in more detail.
 
 ## Operations
 
@@ -100,10 +112,49 @@ Upgrade one node at a time. After each node restarts on the new version, confirm
 ### Key rotation
 
 - **Validator node keys:** add a validator with the new key and remove the old one, both through the validator vote above. Do the add first, so the set never shrinks below the size you need.
-- **Aggsender and aggsender validator keys:** these keys are registered as signers on the `AggchainECDSAMultisig` contract. Change them by updating the signer set with `updateSignersAndThreshold`, which only the aggchain manager can call, then restart the affected service with the new keystore.
+- **Aggsender and aggsender validator keys:** these keys are registered as signers on the `AggchainECDSAMultisig` contract. Change them by updating the signer set, as described next, then restart the affected service with the new keystore.
 
-> [!CAUTION]
-> **Unverified:** The full procedure and required permissions for updating the `AggchainECDSAMultisig` signer set after initialization, including which address holds the aggchain manager role.
+### Updating the signer set
+
+Only the aggchain manager can change the signers or the threshold. That is the EOA you supplied as `initializeBytesAggchain` in the [chain integration runbook](01-rollup-creation.md) and used to run the initialization script in [chapter 04](04-rollup-initialization.md). It is a separate role from `rollupAdminAddress`. Read the current holder from the rollup contract:
+
+```shell
+export rollup_addr="<sovereign_rollup_address>"   # see chapter 05
+cast call "${rollup_addr}" "aggchainManager()(address)" --rpc-url "${l1_rpc_url}"
+```
+
+Read the current signer list and threshold before every change. Removals refer to signers by their position in this list:
+
+```shell
+cast call "${rollup_addr}" "getAggchainSignerInfos()((address,string)[])" --rpc-url "${l1_rpc_url}"
+cast call "${rollup_addr}" "threshold()(uint256)" --rpc-url "${l1_rpc_url}"
+```
+
+`updateSignersAndThreshold` removes signers, appends new ones, and sets the new threshold in a single transaction:
+
+```shell
+cast send "${rollup_addr}" \
+  "updateSignersAndThreshold((address,uint256)[],(address,string)[],uint256)" \
+  "[(<SIGNER_TO_REMOVE>,<its_index>)]" \
+  "[(<NEW_SIGNER_ADDRESS>,\"https://<new_signer_host>:<validator_grpc_port>\")]" \
+  <new_threshold> \
+  --rpc-url "${l1_rpc_url}" \
+  --private-key 0x...   # aggchain manager key
+```
+
+The contract enforces these rules:
+
+- Removals are `(address, index)` pairs. When you remove several signers, list them in strictly descending index order, or the call reverts with `IndicesNotInDescendingOrder`.
+- Removing a signer moves the last signer into the freed position, and new signers are appended at the end.
+- The new threshold must be at least 1 and at most the new number of signers. A `url` cannot be empty, and the list holds at most 255 signers.
+
+Because aggkit requires the proposer's `AGGSENDER_ADDRESS` to stay at index 0, the swap-on-remove rule matters. Removing or adding validators at other positions leaves the proposer in place. To rotate the proposer's own key, remove every signer (highest index first) and add the full list back in one call, with the new `AGGSENDER_ADDRESS` first, then restart the aggsender with the new keystore.
+
+The aggsender reads the committee from the contract for each certificate, so validators added or removed take effect on the next certificate without a proposer restart.
+
+This applies only while `useDefaultSigners` is `false`, as set in chapter 04. With `useDefaultSigners` set to `true`, the contract uses the AgglayerGateway's default signer set and ignores its own list.
+
+To hand the aggchain manager role to another account, such as a consortium multisig, the current manager calls `transferAggchainManagerRole(address)` and the new account then calls `acceptAggchainManagerRole()`.
 
 ---
 

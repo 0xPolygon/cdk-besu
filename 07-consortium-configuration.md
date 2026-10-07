@@ -131,17 +131,23 @@ Point each member's `L2URL` at a Besu RPC node that member trusts, ideally its o
 
 ### Proposer changes
 
-The proposing aggsender adds an `[AggSender.ValidatorClient]` section with the validator endpoint:
+The proposer finds the validators on-chain. For each certificate, the aggsender reads the signer list and threshold from the `AggchainECDSAMultisig` contract and opens a gRPC connection to the `url` of every signer. It sends the certificate to all of them at once and stops as soon as it holds `threshold` signatures, its own included. The proposer signs its own entry locally with `AggSenderPrivateKey`, so its own `url` is never dialed.
+
+This puts two requirements on the signer list from [chapter 04](04-rollup-initialization.md):
+
+- The proposer's `AGGSENDER_ADDRESS` must be the first signer. The aggsender refuses to send a certificate otherwise.
+- Each validator's `url` must reach that member's `[Validator.ServerConfig]` gRPC port from the proposer host, for example `https://<member_2_validator_host>:<validator_grpc_port>`. aggkit strips an `http://` or `https://` prefix before dialing, so a bare `host:port` works too. The prefix does not turn on TLS: set `UseTLS = true` under `[AggSender.ValidatorClient]` when the validators serve gRPC over TLS.
+
+`[AggSender.ValidatorClient]` holds no endpoint list. It only sets the gRPC client options, such as timeouts and TLS, that the aggsender applies to every validator connection. If the proposer reaches a validator through a different address from the one registered on-chain, for example over a private network, map it in `[AggSender.CommitteeOverride]`:
 
 ```toml
-[AggSender.ValidatorClient]
-URL = "<validator_host>:<validator_grpc_port>"
+[AggSender.CommitteeOverride]
+URLMapping = { "https://<member_2_validator_host>:<validator_grpc_port>" = "http://<private_address>:<validator_grpc_port>" }
 ```
 
-> [!CAUTION]
-> **Unverified:** How the proposer reaches several aggsender validators. Kurtosis configures a single `[AggSender.ValidatorClient]` URL; the configuration for a larger committee, for example through the signer URLs registered on-chain, still needs confirmation.
+The keys are the URLs exactly as registered on-chain.
 
-The proposer can also enable `RequireCommitteeMembershipCheck` under `[AggSender]`. The aggkit configuration describes it as a check at proposer startup of whether the proposer is in the multisig committee.
+The proposer and each validator can also set `RequireCommitteeMembershipCheck = true` (under `[AggSender]` and `[Validator]` respectively). At startup, the service then checks that its signing address is in the on-chain committee and fails to start if it isn't. With the default `false`, it only logs a warning.
 
 ## Consortium permissioning
 
@@ -156,7 +162,7 @@ Members agree on the following before launch:
 
 - Who holds `ADMIN_ADDRESS`, which can pause the bridge and manage the L2 contracts, and whether it is a multisig controlled by several members.
 - The certificate threshold M, and what happens if enough members go offline that the threshold cannot be met.
-- The procedure for adding or removing a member: a validator vote on the QBFT set, plus a signer set update on `AggchainECDSAMultisig` (see [chapter 06](06-verification-and-operations.md#key-rotation)).
+- The procedure for adding or removing a member: a validator vote on the QBFT set, plus a signer set update on `AggchainECDSAMultisig` (see [chapter 06](06-verification-and-operations.md#updating-the-signer-set)).
 - The upgrade window for Besu and aggkit, and who coordinates it.
 
 ---

@@ -82,10 +82,9 @@ Update the file with relevant information from your `combined.json`. Example con
 ```
 
 > [!NOTE]
-> The AggOracle committee is not supported on Besu chains. Keep `useAggOracleCommittee` set to `false`, so a single `AGGORACLE_ADDRESS`, set as `globalExitRootUpdater`, updates the GER on L2.
-
-> [!CAUTION]
-> **Unverified:** Why Kurtosis rejects the AggOracle committee for Besu chains, and whether production chains can enable it. This needs confirmation from the Agglayer team.
+> This guide does not cover the AggOracle committee. Keep `useAggOracleCommittee` set to `false`, so a single `AGGORACLE_ADDRESS`, set as `globalExitRootUpdater`, updates the GER on L2.
+>
+> Besu does not prevent the committee from working. The `AggOracleCommittee` contract is plain Solidity with no client- or hardfork-specific features, and `createSovereignGenesis` places it in the genesis `alloc` like the other predeploys. Kurtosis rejects `use_agg_oracle_committee` for Besu only because the Besu preset was added and tested with a single aggoracle. A chain that wants the committee can set `useAggOracleCommittee`, `aggOracleCommittee`, and `quorum` here and run one aggoracle per member with `EnableAggOracleCommittee = true`, but that setup has no end-to-end test on Besu yet.
 
 ## Step 3: Download Allocs File
 
