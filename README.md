@@ -114,9 +114,6 @@ flowchart LR
 
 Before starting, review the **[Prerequisites](00-prerequisites.md)** for host tooling, component versions, and the wallet accounts you'll need to fund.
 
-> [!CAUTION]
-> Callouts marked **Unverified** flag details that still need confirmation from testing or the Agglayer team. Check each one before a testnet or mainnet deployment.
-
 1. **[Rollup Creation](01-rollup-creation.md)** - Initiate the Agglayer chain integration process with Polygon Labs to receive the deployment artifacts
 2. **[Genesis Generation](02-genesis.md)** - Generate the Polygon genesis fragment with the sovereign bridge and GER predeploys
 3. **[Besu Network Deployment](03-besu-network.md)** - Build the QBFT genesis and start the validators and the RPC node

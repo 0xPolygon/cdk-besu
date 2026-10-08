@@ -42,13 +42,13 @@ Install the following on the machine you'll run the deployment from:
 |---|---|---|
 | agglayer-contracts | v12.2.3 | - |
 | aggkit | 0.10.0 | `ghcr.io/agglayer/aggkit` |
-| zkevm-bridge-service | see note | `hermeznetwork/zkevm-bridge-service` |
+| zkevm-bridge-service | v0.6.3-hotfix.1 | `ghcr.io/0xpolygon/zkevm-bridge-service` |
 
-> [!CAUTION]
-> **Unverified:** Whether the aggkit 0.10.0 image tag carries a `v` prefix (`0.10.0` or `v0.10.0`). Check the tags on `ghcr.io/agglayer/aggkit` before you pull.
+> [!NOTE]
+> Image tags follow each project's own convention. aggkit tags carry no `v` prefix (`ghcr.io/agglayer/aggkit:0.10.0`), while zkevm-bridge-service tags do (`ghcr.io/0xpolygon/zkevm-bridge-service:v0.6.3-hotfix.1`).
 
-> [!CAUTION]
-> **Unverified:** Which zkevm-bridge-service version to pin. Kurtosis tests `0.6.4-RC2`; the latest stable release is `v0.6.3`.
+> [!NOTE]
+> zkevm-bridge-service `v0.6.3-hotfix.1` is the stable `v0.6.3` release plus a go-ethereum bump for the Sepolia Glamsterdam hardfork, with no configuration changes. `v0.6.3` includes the fix for sync errors on sovereign networks. Releases from `v0.6.3` onward are published to `ghcr.io/0xpolygon/zkevm-bridge-service` only; the `hermeznetwork/zkevm-bridge-service` image on Docker Hub stops at `v0.6.2-RC3`.
 
 > [!WARNING]
 > Use aggkit 0.9 or later. Earlier versions recompute L2 block hashes with go-ethereum header hashing, which never matches a QBFT block hash, so the L2 bridge syncer drops every block that carries bridge events and aggkit never builds a certificate.

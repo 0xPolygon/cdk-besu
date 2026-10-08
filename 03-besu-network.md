@@ -36,8 +36,8 @@ A single validator works for devnets and matches the tested Kurtosis setup, but 
 
 Run at least one RPC node separate from the validators. aggkit, the bridge service, and users connect to the RPC node, and the validators stay off the public network.
 
-> [!CAUTION]
-> **Unverified:** The Kurtosis test suite runs a single QBFT validator only. Networks with several validators have not yet passed an automated end-to-end test with the Agglayer stack.
+> [!IMPORTANT]
+> The automated end-to-end test, the Kurtosis `besu/sovereign-ecdsa-multisig` preset, runs a single QBFT validator. The Agglayer stack does not depend on the validator count: aggkit and the bridge service read the chain through the RPC node only, and aggkit 0.9 and later takes block hashes from the JSON-RPC response, so the committed seals in `extraData`, which differ with the validator set, do not affect it. The validator count only changes Besu's own consensus behavior. Before a testnet or mainnet launch, run the [verification checklist](06-verification-and-operations.md#verification-checklist) against your multi-validator network, including a run with one validator stopped.
 
 ## Step 2: Normalize the Polygon Allocs
 
@@ -236,11 +236,11 @@ docker run -d --name besu-rpc \
   --rpc-http-enabled \
   --rpc-http-host=0.0.0.0 \
   --rpc-http-port=8545 \
-  --rpc-http-api=ETH,NET,WEB3,QBFT,TXPOOL,DEBUG,TRACE \
+  --rpc-http-api=ETH,NET,WEB3,QBFT,DEBUG \
   --rpc-ws-enabled \
   --rpc-ws-host=0.0.0.0 \
   --rpc-ws-port=8546 \
-  --rpc-ws-api=ETH,NET,WEB3,QBFT,TXPOOL \
+  --rpc-ws-api=ETH,NET,WEB3,QBFT \
   --host-allowlist=<besu_rpc_hostname> \
   --min-gas-price=0 \
   --sync-mode=FULL \
@@ -251,8 +251,16 @@ docker run -d --name besu-rpc \
 
 `--host-allowlist` lists the hostnames clients use to reach the RPC node. Besu accepts only `localhost` and `127.0.0.1` by default, so aggkit and the bridge service fail to connect unless their hostname for the node is on the list.
 
-> [!CAUTION]
-> **Unverified:** The minimum RPC API set aggkit and the bridge service need on the RPC node. Until it is confirmed, keep `DEBUG` and `TRACE` enabled.
+The RPC node enables only the API namespaces its clients use:
+
+| Namespace | Used by |
+|---|---|
+| `ETH` | aggkit and the bridge service: blocks, logs, transactions, gas estimation, and sending GER and claim transactions |
+| `NET`, `WEB3` | Not called by aggkit or the bridge service; kept for standard tooling and health checks |
+| `DEBUG` | aggkit: `debug_traceTransaction` with the `callTracer`, which the bridge and claim syncers use to find the original sender when a bridge or claim reaches the bridge contract through another contract |
+| `QBFT` | The validator set check in step 5 |
+
+Neither client calls `TRACE` or `TXPOOL` methods, so the RPC node leaves them off. Kurtosis enables both on its devnet node, but nothing in the stack needs them. `DEBUG` lets callers run expensive traces, so expose the RPC node only to aggkit, the bridge service, and the users you intend to serve.
 
 ### Differences from the Kurtosis devnet
 
@@ -286,8 +294,8 @@ Mount the file writable, not with `:ro`. Besu writes to it when the allowlist ch
 
 For node permissioning, add a `nodes-allowlist` entry with the enode URL of every validator and RPC node, and enable it with `--permissions-nodes-config-file-enabled` and `--permissions-nodes-config-file`. Read the RPC node's public key from its data volume with `besu --data-path=/data public-key export`.
 
-> [!CAUTION]
-> **Unverified:** Whether account permissioning must be enabled on every validator, as well as on the RPC node, for the allowlist to apply during block production and block import. Until it is confirmed, enable it with the same file on every node.
+> [!IMPORTANT]
+> Enable account permissioning with the same file on every validator and on every RPC node. Besu checks the local allowlist when a transaction enters a node's transaction pool and when that node builds a block, but not when it imports a block that another validator produced. The Besu documentation says the same: local permissioning affects only your node, and your rules are not enforced in blocks that other nodes produce. A node without the allowlist can therefore accept a transaction from any sender and gossip it to the validators, and a validator without it can put that transaction in a block, which every other node then imports. The allowlist is local policy rather than a consensus rule. Every node operator has to apply it for it to hold, which matters in a consortium (see [chapter 07](07-consortium-configuration.md#consortium-permissioning)).
 
 ## Step 5: Confirm the Chain Is Producing Blocks
 
